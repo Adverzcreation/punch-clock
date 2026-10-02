@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // CHANGE THIS to the same email as ADMIN_EMAIL in firebase-config.js
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == "vpkharche@gmail.com";
+    }
+    function signedIn() { return request.auth != null; }
+    function notBlocked() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.blocked == false;
+    }
+
+    // Employee profiles
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.blocked == false;
+      allow update, delete: if isAdmin();          // only admin can block/unblock
+    }
+
+    // Mobile number -> email lookup (lets people log in with their mobile number)
+    match /phoneIndex/{mobile} {
+      allow get: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Punch records
+    match /punches/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.type in ['IN', 'OUT']
+                    && request.resource.data.time == request.time   // server time only, no faking
+                    && notBlocked();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
