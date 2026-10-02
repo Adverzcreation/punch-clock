@@ -4,7 +4,7 @@ service cloud.firestore {
 
     // CHANGE THIS to the same email as ADMIN_EMAIL in firebase-config.js
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == "vpkharche@gmail.com";
+      return request.auth != null && request.auth.token.email == "vpkharche16@gmail.com";
     }
     function signedIn() { return request.auth != null; }
     function notBlocked() {

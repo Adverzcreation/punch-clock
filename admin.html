@@ -219,6 +219,7 @@ $("xlsBtn").onclick = () => {
   XLSX.utils.book_append_sheet(wb, s2, "All punches");
   XLSX.writeFile(wb, `attendance_${$("from").value}_to_${$("to").value}.xlsx`);
 };
+
 </script>
 </body>
 </html>
